@@ -28,6 +28,9 @@ from slimit.visitors.nodevisitor import ASTVisitor
 import slimit.ast as ast
 
 def read_js_object(code):
+	"""Takes in code and returns a dictionary of assignments to object literals, e.g.
+		`var x = {y: 1, z: 2};`
+		returns {'x': {'y': 1, 'z': 2}}."""
 	def visit(node):
 		if isinstance(node, ast.Program):
 			d = {}
@@ -74,3 +77,6 @@ if __name__ == "__main__":
 	# test
 	print read_js_object("""var foo = {x: 10, y: "hi " + "there!"};
 							var bar = {derp: ["herp", "it", "up", "forever"]};""")
+	# should print:
+	# {'foo': {'y': 'hi there!', 'x': '10'},
+	#  'bar': {'derp': ['herp', 'it', 'up', 'forever']}}
