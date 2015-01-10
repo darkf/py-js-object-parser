@@ -1,6 +1,10 @@
-""" Simple JavaScript/ECMAScript object literal reader
+"""Simple JavaScript/ECMAScript object literal reader
 	Only supports object literals wrapped in `var x = ...;` statements, so you
 	  might want to do read_js_object('var x = %s;' % literal) if it's in another format.
+
+	If you pass in the keyword argument use_unicode it will decode
+	utf8 as well as unicode code points into python unicode
+	strings
 
 	Requires the slimit <https://github.com/rspivak/slimit> library for parsing.
 
@@ -21,13 +25,20 @@
 		  TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION 
 	
 		  0. You just DO WHAT THE FUCK YOU WANT TO.
+
 """
 
 from slimit.parser import Parser
 from slimit.visitors.nodevisitor import ASTVisitor
 import slimit.ast as ast
+import re
 
-def read_js_object(code):
+unicodepoint = re.compile('\\\\u([0-9a-fA-F]{4})')
+
+def unicode_replace(match):
+	return unichr(int(match.group(1),16))
+
+def read_js_object(code, use_unicode=False):
 	"""Takes in code and returns a dictionary of assignments to object literals, e.g.
 		`var x = {y: 1, z: 2};`
 		returns {'x': {'y': 1, 'z': 2}}."""
@@ -64,7 +75,12 @@ def read_js_object(code):
 				raise ValueError("Cannot do operator '%s'" % node.op)
 
 		elif isinstance(node, ast.String):
-			return node.value.strip('"').strip("'")
+			s = node.value.strip('"').strip("'")
+			if use_unicode:
+				us = s.decode('utf8')
+				return unicodepoint.sub(unicode_replace, us)
+			else:
+				return s
 		elif isinstance(node, ast.Array):
 			return [visit(x) for x in node]
 		elif  isinstance(node, ast.Number) or isinstance(node, ast.Identifier) or isinstance(node, ast.Boolean) or isinstance(node, ast.Null):

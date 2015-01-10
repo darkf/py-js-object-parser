@@ -3,6 +3,9 @@ Simple JavaScript/ECMAScript object literal reader
 Only supports object literals wrapped in `var x = ...;` statements, so you
   might want to do `read_js_object('var x = %s;' % literal)` if it's in another format.
 
+If you pass in the keyword argument use_unicode it will decode utf8 as
+well as unicode code points into python unicode strings
+
 Basic constant folding on strings and numbers is done, e.g. "hi " + "there!" reduces to "hi there!",
 and 1+1 reduces to 2.
 
